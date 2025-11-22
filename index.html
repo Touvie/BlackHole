@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v3.3 - Adjusted Rotation Speeds</div>
+    <div id="version-counter">v3.4 - Event Horizon with Distortions</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -844,9 +844,70 @@
         const galaxy = new THREE.Points(galaxyGeometry, galaxyMaterial);
         scene.add(galaxy);
         
-        const eventHorizonGeometry = new THREE.SphereGeometry(4.0, 64, 64);
-        const eventHorizonMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x000000
+        // === HORIZON DES ÉVÉNEMENTS avec distorsions gravitationnelles ===
+        const eventHorizonGeometry = new THREE.SphereGeometry(4.0, 128, 128);
+        const eventHorizonMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 }
+            },
+            vertexShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                varying vec2 vUv;
+                uniform float time;
+
+                void main() {
+                    vNormal = normalize(normalMatrix * normal);
+                    vPosition = position;
+                    vUv = uv;
+
+                    // Distorsion subtile de la géométrie (effet gravitationnel)
+                    vec3 pos = position;
+                    float distortion = sin(pos.y * 3.0 + time * 0.5) * 0.02;
+                    distortion += sin(pos.x * 2.0 + time * 0.3) * 0.015;
+                    pos += normal * distortion;
+
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                varying vec2 vUv;
+                uniform float time;
+
+                void main() {
+                    // Distance du centre (0 au centre, 1 aux bords)
+                    float dist = length(vUv - 0.5) * 2.0;
+
+                    // Gradient gravitationnel : noir au centre, lueur aux bords
+                    float edgeGlow = smoothstep(0.7, 1.0, dist);
+
+                    // Couleur de base : noir profond
+                    vec3 baseColor = vec3(0.0, 0.0, 0.0);
+
+                    // Lueur orange/rouge au bord (dernière lumière avant l'horizon)
+                    vec3 glowColor = vec3(1.0, 0.4, 0.1) * 0.3;
+
+                    // Distorsion temporelle (pulsation subtile)
+                    float pulse = sin(time * 0.8) * 0.5 + 0.5;
+                    edgeGlow *= (0.8 + pulse * 0.2);
+
+                    // Effet de Fresnel (plus visible sur les bords)
+                    vec3 viewDir = normalize(vPosition - cameraPosition);
+                    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 2.0);
+
+                    // Combiner tout
+                    vec3 finalColor = baseColor + glowColor * edgeGlow * fresnel;
+
+                    // Ajouter un peu de bruit pour effet gravitationnel
+                    float noise = fract(sin(dot(vUv + time * 0.1, vec2(12.9898, 78.233))) * 43758.5453);
+                    finalColor += vec3(noise * 0.02);
+
+                    gl_FragColor = vec4(finalColor, 1.0);
+                }
+            `,
+            side: THREE.DoubleSide
         });
         const eventHorizon = new THREE.Mesh(eventHorizonGeometry, eventHorizonMaterial);
         scene.add(eventHorizon);
@@ -1064,7 +1125,10 @@
             
             // Update photon ring pulse
             photonRingMaterial.uniforms.time.value = globalTime;
-            
+
+            // Update event horizon distortions
+            eventHorizonMaterial.uniforms.time.value = globalTime;
+
             // Animation des anneaux
             if (isRegrouping) {
                 // Mode test : regroupement continu
