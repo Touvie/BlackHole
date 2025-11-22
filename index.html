@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v2.0 - Spiral Inversion</div>
+    <div id="version-counter">v2.1 - Decoupled Systems</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -391,7 +391,7 @@
             if (useArms) {
                 const distanceInArm = (distance - 24) / 30;
                 const armInfluence = Math.pow(distanceInArm, 1.5);
-                finalAngle = finalAngle * (1 - armInfluence) + (armOffset + spiralAngle * 0.3) * armInfluence;
+                finalAngle = finalAngle * (1 - armInfluence) + armOffset * armInfluence;
             }
             
             positions[i * 3] = Math.cos(finalAngle) * distance;
