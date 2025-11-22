@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v1.7 - Unified System</div>
+    <div id="version-counter">v1.8 - Back to Working Arms</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -385,11 +385,13 @@
             initialDistances[i] = distance;
             spiralFactors[i] = spiralFactor;
             
-            const spiralAngle = GOLDEN_ANGLE * Math.log(distance / 6) * spiralFactor; // Ajusté pour distance 6
+            const spiralAngle = -GOLDEN_ANGLE * Math.log(distance / 6) * spiralFactor; // Ajusté pour distance 6
             let finalAngle = angle + spiralAngle;
-
+            
             if (useArms) {
-                finalAngle += armOffset;
+                const distanceInArm = (distance - 24) / 30;
+                const armInfluence = Math.pow(distanceInArm, 1.5);
+                finalAngle = finalAngle * (1 - armInfluence) + (armOffset + spiralAngle * 0.3) * armInfluence;
             }
             
             positions[i * 3] = Math.cos(finalAngle) * distance;
@@ -1345,21 +1347,22 @@
                 
                 const angle = initialAngles[i];
                 const spiralFactor = spiralFactors[i];
-                const spiralAngle = GOLDEN_ANGLE * Math.log(distance / 6) * spiralFactor;
+                const spiralAngle = -GOLDEN_ANGLE * Math.log(distance / 6) * spiralFactor;
                 let finalAngle = angle + spiralAngle;
-
+                
                 if (distance > 24) {
                     const numArms = 3;
                     const armIndex = Math.floor((angle / (Math.PI * 2)) * numArms);
                     const armAngleBase = (armIndex * Math.PI * 2) / numArms;
-
+                    
                     const distanceInArm = (distance - 24) / 30;
                     const armWidth = 1.5 - distanceInArm * 1.2;
                     const armVariation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth * 0.5;
-                    const armSpiral = -distanceInArm * Math.PI * 0.6;
-                    const armOffset = -armAngleBase + armSpiral + armVariation;
-
-                    finalAngle += armOffset;
+                    const armSpiral = distanceInArm * Math.PI * 0.6;
+                    const armAngle = armAngleBase + armSpiral + armVariation;
+                    
+                    const armInfluence = Math.pow(distanceInArm, 1.5);
+                    finalAngle = finalAngle * (1 - armInfluence) + armAngle * armInfluence;
                 }
                 
                 positionsArray[i * 3] = Math.cos(finalAngle) * distance;
