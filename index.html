@@ -1360,24 +1360,14 @@
                 // Distance angulaire normalisée du centre du bras (-1 à 1)
                 const angleInArm = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms);
 
-                // Filtrage : vérifier si la particule est dans un bras
-                const threshold = 0.5;
-                const isInArm = Math.abs(angleInArm) < threshold;
-
                 const armWidth = 1.0 * (1 - (distance - 6) / 48 * 0.6);
                 const variation = angleInArm * armWidth;
 
                 const finalAngle = angle + spiralAngle + armOffset + variation;
 
-                // Si hors du bras, mettre la particule loin (invisible)
-                if (isInArm) {
-                    positionsArray[i * 3] = Math.cos(finalAngle) * distance;
-                    positionsArray[i * 3 + 1] = Math.sin(finalAngle) * distance;
-                } else {
-                    positionsArray[i * 3] = 0;
-                    positionsArray[i * 3 + 1] = 0;
-                    positionsArray[i * 3 + 2] = -1000;
-                }
+                // Pas de filtrage pendant l'animation - les particules restent visibles
+                positionsArray[i * 3] = Math.cos(finalAngle) * distance;
+                positionsArray[i * 3 + 1] = Math.sin(finalAngle) * distance;
                 
                 const lumT = Math.min((distance - 6) / 28, 1.0);
                 if (distance <= 34) {
