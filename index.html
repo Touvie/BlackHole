@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v3.2 - Kepler's Law + Enhanced</div>
+    <div id="version-counter">v3.3 - Adjusted Rotation Speeds</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -458,10 +458,10 @@
         // Données pour chaque anneau
         const ringRotations = [0, 0, 0]; // Angles de rotation actuels
         const ringRotationSpeeds = [
-            0.030 + Math.random() * 0.010,
-            0.030 + Math.random() * 0.010,
-            0.030 + Math.random() * 0.010
-        ]; // Vitesses très rapides entre 0.030 et 0.040
+            0.050 + Math.random() * 0.010,  // 0.050-0.060
+            0.050 + Math.random() * 0.010,
+            0.050 + Math.random() * 0.010
+        ]; // Vitesses très rapides entre 0.050 et 0.060
         
         // Générer des axes de rotation aléatoires pour chaque anneau
         const ringAxes = [];
@@ -1344,7 +1344,8 @@
 
                 // === LOI DE KEPLER : rotation différentielle ===
                 // Vitesse angulaire inversement proportionnelle à √distance
-                const angularVelocity = 0.002 / Math.sqrt(distance);
+                // Centre (d=6): ~0.0010, Bord (d=54): ~0.0003
+                const angularVelocity = 0.0024 / Math.sqrt(distance);
                 initialAngles[i] += angularVelocity;
 
                 const angle = initialAngles[i];
