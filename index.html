@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v3.1 - Accentuated Arms</div>
+    <div id="version-counter">v3.0 - True Logarithmic Spiral</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -367,7 +367,7 @@
             const spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
 
             // Variation pour épaisseur des bras (plus large au centre, plus fin aux extrémités)
-            const armWidth = 0.4 * (1 - (distance - 6) / 48 * 0.6);
+            const armWidth = 0.8 * (1 - (distance - 6) / 48 * 0.6);
             const variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
 
             // Angle final = angle de base + spirale + décalage du bras + variation
@@ -1338,7 +1338,7 @@
                 const armOffset = (armIndex * 2 * Math.PI / numArms);
                 const spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
 
-                const armWidth = 0.4 * (1 - (distance - 6) / 48 * 0.6);
+                const armWidth = 0.8 * (1 - (distance - 6) / 48 * 0.6);
                 const variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
 
                 const finalAngle = angle + spiralAngle + armOffset + variation;
