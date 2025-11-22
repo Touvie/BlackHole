@@ -909,70 +909,23 @@
         const eventHorizon = new THREE.Mesh(eventHorizonGeometry, eventHorizonMaterial);
         scene.add(eventHorizon);
 
-        // === LENTILLE GRAVITATIONNELLE - Distorsion de lumière autour ===
-        const lensingGeometry = new THREE.SphereGeometry(5.5, 64, 64);
-        const lensingMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0 }
-            },
-            vertexShader: `
-                varying vec3 vNormal;
-                varying vec3 vPosition;
-                varying float vDistanceFromCenter;
+        // === LENTILLE GRAVITATIONNELLE - Effet de loupe/réfraction ===
+        const lensingGeometry = new THREE.SphereGeometry(5.5, 128, 128);
 
-                void main() {
-                    vNormal = normalize(normalMatrix * normal);
-                    vPosition = position;
-                    vDistanceFromCenter = length(position);
-
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                varying vec3 vNormal;
-                varying vec3 vPosition;
-                varying float vDistanceFromCenter;
-                uniform float time;
-
-                void main() {
-                    // Distance normalisée (0 au centre, 1 aux bords)
-                    float dist = vDistanceFromCenter / 5.5;
-
-                    // Effet de Fresnel AMPLIFIÉ
-                    vec3 viewDir = normalize(vPosition - cameraPosition);
-                    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 2.0);
-
-                    // Distorsions VISIBLES
-                    float wave1 = sin(vPosition.x * 5.0 + time * 2.0);
-                    float wave2 = sin(vPosition.y * 4.0 - time * 1.5);
-                    float wave3 = cos(vPosition.z * 6.0 + time);
-                    float distortion = (wave1 + wave2 + wave3) * 0.3;
-
-                    // Couleurs irisées TRÈS VISIBLES
-                    vec3 rainbow = vec3(
-                        0.5 + 0.5 * sin(distortion * 4.0 + time + 0.0),
-                        0.5 + 0.5 * sin(distortion * 4.0 + time + 2.1),
-                        0.5 + 0.5 * sin(distortion * 4.0 + time + 4.2)
-                    );
-
-                    // Lueur gravitationnelle FORTE
-                    vec3 glowColor = vec3(1.0, 0.5, 0.1) * 2.0;
-
-                    // Combiner avec intensité forte
-                    vec3 finalColor = mix(glowColor, rainbow * 2.0, distortion * 0.5 + 0.5);
-                    finalColor *= fresnel;
-
-                    // Alpha VISIBLE
-                    float alpha = fresnel * 0.8;
-
-                    gl_FragColor = vec4(finalColor, alpha);
-                }
-            `,
+        // Matériau avec transmission pour vrai effet de verre
+        const lensingMaterial = new THREE.MeshPhysicalMaterial({
+            metalness: 0.0,
+            roughness: 0.05,
+            transmission: 0.98,    // Quasi-transparent
+            thickness: 1.5,        // Épaisseur pour réfraction
+            ior: 1.8,             // Indice de réfraction élevé (forte distorsion)
+            envMapIntensity: 0.5,
+            color: 0xffaa66,      // Légère teinte chaude
             transparent: true,
-            side: THREE.DoubleSide,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
+            opacity: 0.2,
+            side: THREE.DoubleSide
         });
+
         const gravitationalLensing = new THREE.Mesh(lensingGeometry, lensingMaterial);
         scene.add(gravitationalLensing);
 
@@ -1192,9 +1145,6 @@
 
             // Update event horizon distortions
             eventHorizonMaterial.uniforms.time.value = globalTime;
-
-            // Update gravitational lensing
-            lensingMaterial.uniforms.time.value = globalTime;
 
             // Animation des anneaux
             if (isRegrouping) {
