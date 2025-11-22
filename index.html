@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v3.5 - Gravitational Lensing</div>
+    <div id="version-counter">v3.8 - Clean (no lensing)</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -909,77 +909,6 @@
         const eventHorizon = new THREE.Mesh(eventHorizonGeometry, eventHorizonMaterial);
         scene.add(eventHorizon);
 
-        // === LENTILLE GRAVITATIONNELLE - Distorsion ondulée visible ===
-        const lensingGeometry = new THREE.SphereGeometry(5.5, 128, 128);
-
-        // Shader qui déforme visuellement (effet loupe/vagues)
-        const lensingMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0 }
-            },
-            vertexShader: `
-                varying vec3 vNormal;
-                varying vec3 vPosition;
-                varying vec3 vWorldPosition;
-                uniform float time;
-
-                void main() {
-                    vNormal = normalize(normalMatrix * normal);
-                    vPosition = position;
-
-                    vec4 worldPos = modelMatrix * vec4(position, 1.0);
-                    vWorldPosition = worldPos.xyz;
-
-                    // Distorsion du vertex pour créer des vagues
-                    vec3 pos = position;
-                    float wave = sin(pos.x * 3.0 + time) * 0.15;
-                    wave += cos(pos.y * 2.5 - time * 0.8) * 0.12;
-                    wave += sin(pos.z * 4.0 + time * 0.6) * 0.10;
-
-                    pos += normal * wave;
-
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-                }
-            `,
-            fragmentShader: `
-                varying vec3 vNormal;
-                varying vec3 vPosition;
-                varying vec3 vWorldPosition;
-                uniform float time;
-
-                void main() {
-                    // Vue direction
-                    vec3 viewDir = normalize(cameraPosition - vWorldPosition);
-
-                    // Fresnel pour bords visibles
-                    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 1.5);
-
-                    // Effet de distorsion ondulée
-                    float dist = length(vWorldPosition) / 5.5;
-                    float ripple = sin(dist * 15.0 - time * 3.0) * 0.5 + 0.5;
-
-                    // Couleur de type "heat haze" / distorsion atmosphérique
-                    vec3 baseColor = vec3(1.0, 0.6, 0.3); // Orange chaud
-                    vec3 rippleColor = vec3(0.3, 0.5, 1.0); // Bleu froid
-
-                    vec3 finalColor = mix(baseColor, rippleColor, ripple);
-                    finalColor *= fresnel * 1.5;
-
-                    // Alpha visible mais subtil
-                    float alpha = fresnel * 0.4 + ripple * 0.2;
-
-                    gl_FragColor = vec4(finalColor, alpha);
-                }
-            `,
-            transparent: true,
-            side: THREE.DoubleSide,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
-
-        const gravitationalLensing = new THREE.Mesh(lensingGeometry, lensingMaterial);
-        scene.add(gravitationalLensing);
-
         // Helper pour visualiser les axes : Rouge=X, Vert=Y, Bleu=Z
         const createAxis = (color, direction, size = 50) => {
             const group = new THREE.Group();
@@ -1196,9 +1125,6 @@
 
             // Update event horizon distortions
             eventHorizonMaterial.uniforms.time.value = globalTime;
-
-            // Update gravitational lensing waves
-            lensingMaterial.uniforms.time.value = globalTime;
 
             // Animation des anneaux
             if (isRegrouping) {
