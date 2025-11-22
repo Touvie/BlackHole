@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v3.4 - Event Horizon with Distortions</div>
+    <div id="version-counter">v3.5 - Gravitational Lensing</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -844,7 +844,7 @@
         const galaxy = new THREE.Points(galaxyGeometry, galaxyMaterial);
         scene.add(galaxy);
         
-        // === HORIZON DES ÉVÉNEMENTS avec distorsions gravitationnelles ===
+        // === HORIZON DES ÉVÉNEMENTS - Sphère lisse ===
         const eventHorizonGeometry = new THREE.SphereGeometry(4.0, 128, 128);
         const eventHorizonMaterial = new THREE.ShaderMaterial({
             uniforms: {
@@ -854,29 +854,17 @@
                 varying vec3 vNormal;
                 varying vec3 vPosition;
                 varying vec2 vUv;
-                uniform float time;
+                varying vec3 vWorldPosition;
 
                 void main() {
                     vNormal = normalize(normalMatrix * normal);
                     vPosition = position;
                     vUv = uv;
 
-                    // Distorsions gravitationnelles DRAMATIQUES
-                    vec3 pos = position;
+                    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+                    vWorldPosition = worldPos.xyz;
 
-                    // Ondes multiples pour effet complexe
-                    float distortion = sin(pos.y * 4.0 + time * 0.8) * 0.25;
-                    distortion += sin(pos.x * 3.0 - time * 0.6) * 0.20;
-                    distortion += sin(pos.z * 5.0 + time * 0.4) * 0.15;
-
-                    // Distorsion radiale (pulsation)
-                    float radial = sin(length(pos) * 2.0 + time) * 0.18;
-                    distortion += radial;
-
-                    // Appliquer la distorsion
-                    pos += normal * distortion;
-
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                 }
             `,
             fragmentShader: `
@@ -920,6 +908,73 @@
         });
         const eventHorizon = new THREE.Mesh(eventHorizonGeometry, eventHorizonMaterial);
         scene.add(eventHorizon);
+
+        // === LENTILLE GRAVITATIONNELLE - Distorsion de lumière autour ===
+        const lensingGeometry = new THREE.SphereGeometry(5.5, 64, 64);
+        const lensingMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 }
+            },
+            vertexShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                varying float vDistanceFromCenter;
+
+                void main() {
+                    vNormal = normalize(normalMatrix * normal);
+                    vPosition = position;
+                    vDistanceFromCenter = length(position);
+
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                varying float vDistanceFromCenter;
+                uniform float time;
+
+                void main() {
+                    // Distance normalisée (0 au centre, 1 aux bords de la lentille)
+                    float normalizedDist = (vDistanceFromCenter - 4.0) / 1.5;
+
+                    // Effet de distorsion atmosphérique (heat haze)
+                    vec3 viewDir = normalize(vPosition - cameraPosition);
+                    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 3.0);
+
+                    // Distorsion ondulante
+                    float distortion = sin(vPosition.x * 8.0 + time * 2.0) * 0.3;
+                    distortion += sin(vPosition.y * 6.0 - time * 1.5) * 0.25;
+                    distortion += sin(vPosition.z * 10.0 + time * 1.0) * 0.2;
+
+                    // Intensité de l'effet (plus fort près de l'horizon)
+                    float intensity = (1.0 - normalizedDist) * fresnel;
+
+                    // Couleur de distorsion - irisée comme une lentille
+                    vec3 distortionColor = vec3(
+                        0.5 + 0.5 * sin(distortion * 3.0 + time),
+                        0.5 + 0.5 * sin(distortion * 3.0 + time + 2.0),
+                        0.5 + 0.5 * sin(distortion * 3.0 + time + 4.0)
+                    ) * 0.15;
+
+                    // Lueur gravitationnelle orangée
+                    vec3 glowColor = vec3(1.0, 0.6, 0.2) * intensity * 0.4;
+
+                    vec3 finalColor = glowColor + distortionColor * intensity;
+
+                    // Transparence dégradée
+                    float alpha = intensity * 0.6;
+
+                    gl_FragColor = vec4(finalColor, alpha);
+                }
+            `,
+            transparent: true,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const gravitationalLensing = new THREE.Mesh(lensingGeometry, lensingMaterial);
+        scene.add(gravitationalLensing);
 
         // Helper pour visualiser les axes : Rouge=X, Vert=Y, Bleu=Z
         const createAxis = (color, direction, size = 50) => {
@@ -1137,6 +1192,9 @@
 
             // Update event horizon distortions
             eventHorizonMaterial.uniforms.time.value = globalTime;
+
+            // Update gravitational lensing
+            lensingMaterial.uniforms.time.value = globalTime;
 
             // Animation des anneaux
             if (isRegrouping) {
