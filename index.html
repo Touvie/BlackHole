@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v2.3 - Arm Placement Fix</div>
+    <div id="version-counter">v2.4 - Perfect Alignment</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -371,7 +371,7 @@
                 
                 const distanceInArm = (distance - 24) / 30;
                 const armWidth = 1.5 - distanceInArm * 1.2;
-                const armVariation = (Math.random() - 0.5) * armWidth;
+                const armVariation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth * 0.5;
                 
                 const armSpiral = -distanceInArm * Math.PI * 0.6;
                 
