@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v3.0 - True Logarithmic Spiral</div>
+    <div id="version-counter">v3.1 - Defined Arms</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -366,9 +366,16 @@
             // Spirale logarithmique : θ = log(r/r0) / tan(pitch)
             const spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
 
-            // Variation pour épaisseur des bras (plus large au centre, plus fin aux extrémités)
-            const armWidth = 0.8 * (1 - (distance - 6) / 48 * 0.6);
-            const variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
+            // Distance angulaire normalisée du centre du bras (-1 à 1)
+            const angleInArm = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms);
+
+            // Filtrage : vérifier si la particule est dans un bras
+            const threshold = 0.5;
+            const isInArm = Math.abs(angleInArm) < threshold;
+
+            // Variation pour épaisseur des bras
+            const armWidth = 1.0 * (1 - (distance - 6) / 48 * 0.6);
+            const variation = angleInArm * armWidth;
 
             // Angle final = angle de base + spirale + décalage du bras + variation
             const finalAngle = angle + spiralAngle + armOffset + variation;
@@ -377,9 +384,16 @@
             initialDistances[i] = distance;
             spiralFactors[i] = armIndex; // Stocker l'index du bras
 
-            positions[i * 3] = Math.cos(finalAngle) * distance;
-            positions[i * 3 + 1] = Math.sin(finalAngle) * distance;
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 0.15;
+            // Si hors du bras, mettre la particule loin sur Z (invisible)
+            if (isInArm) {
+                positions[i * 3] = Math.cos(finalAngle) * distance;
+                positions[i * 3 + 1] = Math.sin(finalAngle) * distance;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 0.15;
+            } else {
+                positions[i * 3] = 0;
+                positions[i * 3 + 1] = 0;
+                positions[i * 3 + 2] = -1000; // Très loin, invisible
+            }
             
             const colorT = (distance - 6) / 48; // Ajusté pour distance 6
             if (colorT < 0.2) {
@@ -1338,13 +1352,27 @@
                 const armOffset = (armIndex * 2 * Math.PI / numArms);
                 const spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
 
-                const armWidth = 0.8 * (1 - (distance - 6) / 48 * 0.6);
-                const variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
+                // Distance angulaire normalisée du centre du bras (-1 à 1)
+                const angleInArm = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms);
+
+                // Filtrage : vérifier si la particule est dans un bras
+                const threshold = 0.5;
+                const isInArm = Math.abs(angleInArm) < threshold;
+
+                const armWidth = 1.0 * (1 - (distance - 6) / 48 * 0.6);
+                const variation = angleInArm * armWidth;
 
                 const finalAngle = angle + spiralAngle + armOffset + variation;
-                
-                positionsArray[i * 3] = Math.cos(finalAngle) * distance;
-                positionsArray[i * 3 + 1] = Math.sin(finalAngle) * distance;
+
+                // Si hors du bras, mettre la particule loin (invisible)
+                if (isInArm) {
+                    positionsArray[i * 3] = Math.cos(finalAngle) * distance;
+                    positionsArray[i * 3 + 1] = Math.sin(finalAngle) * distance;
+                } else {
+                    positionsArray[i * 3] = 0;
+                    positionsArray[i * 3 + 1] = 0;
+                    positionsArray[i * 3 + 2] = -1000;
+                }
                 
                 const lumT = Math.min((distance - 6) / 28, 1.0);
                 if (distance <= 34) {
