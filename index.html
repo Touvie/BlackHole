@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v2.4 - Perfect Alignment</div>
+    <div id="version-counter">v3.0 - True Logarithmic Spiral</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -353,47 +353,30 @@
         for (let i = 0; i < count; i++) {
             const angle = Math.random() * Math.PI * 2;
             const t = Math.random();
-            
-            let distance;
-            let armOffset = 0;
-            let useArms = false;
-            
-            if (t < 0.75) {
-                const t2 = t / 0.75;
-                distance = 6 + Math.pow(t2, 2.5) * 18; // Commence à 6 au lieu de 2
-            } else {
-                const t2 = (t - 0.75) / 0.25;
-                distance = 24 + t2 * 30; // Ajusté pour compenser
-                
-                const numArms = 3;
-                const armIndex = Math.floor((angle / (Math.PI * 2)) * numArms);
-                const armAngleBase = (armIndex * Math.PI * 2) / numArms;
-                
-                const distanceInArm = (distance - 24) / 30;
-                const armWidth = 1.5 - distanceInArm * 1.2;
-                const armVariation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth * 0.5;
-                
-                const armSpiral = -distanceInArm * Math.PI * 0.6;
-                
-                armOffset = -armAngleBase + armSpiral + armVariation;
-                useArms = true;
-            }
-            
-            const spiralFactor = Math.random() * 0.5 + 0.5;
-            
+            const distance = 6 + Math.pow(t, 2.5) * 48; // Distance 6-54
+
+            // === SPIRALE LOGARITHMIQUE GALACTIQUE ===
+            const numArms = 3;
+            const pitch = 0.3; // Angle de spirale
+
+            // Quel bras (déterminé par l'angle initial)
+            const armIndex = Math.floor((angle / (Math.PI * 2)) * numArms);
+            const armOffset = (armIndex * 2 * Math.PI / numArms);
+
+            // Spirale logarithmique : θ = log(r/r0) / tan(pitch)
+            const spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
+
+            // Variation pour épaisseur des bras (plus large au centre, plus fin aux extrémités)
+            const armWidth = 0.8 * (1 - (distance - 6) / 48 * 0.6);
+            const variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
+
+            // Angle final = angle de base + spirale + décalage du bras + variation
+            const finalAngle = angle + spiralAngle + armOffset + variation;
+
             initialAngles[i] = angle;
             initialDistances[i] = distance;
-            spiralFactors[i] = spiralFactor;
-            
-            const spiralAngle = -GOLDEN_ANGLE * Math.log(distance / 6) * spiralFactor; // Ajusté pour distance 6
-            let finalAngle = angle + spiralAngle;
-            
-            if (useArms) {
-                const distanceInArm = (distance - 24) / 30;
-                const armInfluence = Math.pow(distanceInArm, 1.5);
-                finalAngle = finalAngle * (1 - armInfluence) + armOffset * armInfluence;
-            }
-            
+            spiralFactors[i] = armIndex; // Stocker l'index du bras
+
             positions[i * 3] = Math.cos(finalAngle) * distance;
             positions[i * 3 + 1] = Math.sin(finalAngle) * distance;
             positions[i * 3 + 2] = (Math.random() - 0.5) * 0.15;
@@ -1346,24 +1329,19 @@
                 }
                 
                 const angle = initialAngles[i];
-                const spiralFactor = spiralFactors[i];
-                const spiralAngle = -GOLDEN_ANGLE * Math.log(distance / 6) * spiralFactor;
-                let finalAngle = angle + spiralAngle;
-                
-                if (distance > 24) {
-                    const numArms = 3;
-                    const armIndex = Math.floor((angle / (Math.PI * 2)) * numArms);
-                    const armAngleBase = (armIndex * Math.PI * 2) / numArms;
+                const armIndex = spiralFactors[i]; // spiralFactors stocke maintenant l'index du bras
 
-                    const distanceInArm = (distance - 24) / 30;
-                    const armWidth = 1.5 - distanceInArm * 1.2;
-                    const armVariation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth * 0.5;
-                    const armSpiral = -distanceInArm * Math.PI * 0.6;
-                    const armAngle = -armAngleBase + armSpiral + armVariation;
+                // === SPIRALE LOGARITHMIQUE GALACTIQUE (identique à la création) ===
+                const numArms = 3;
+                const pitch = 0.3;
 
-                    const armInfluence = Math.pow(distanceInArm, 1.5);
-                    finalAngle = finalAngle * (1 - armInfluence) + armAngle * armInfluence;
-                }
+                const armOffset = (armIndex * 2 * Math.PI / numArms);
+                const spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
+
+                const armWidth = 0.8 * (1 - (distance - 6) / 48 * 0.6);
+                const variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
+
+                const finalAngle = angle + spiralAngle + armOffset + variation;
                 
                 positionsArray[i * 3] = Math.cos(finalAngle) * distance;
                 positionsArray[i * 3 + 1] = Math.sin(finalAngle) * distance;
