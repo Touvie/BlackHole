@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v2.2 - Full Sync</div>
+    <div id="version-counter">v2.3 - Arm Placement Fix</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -366,7 +366,7 @@
                 distance = 24 + t2 * 30; // Ajusté pour compenser
                 
                 const numArms = 3;
-                const armIndex = Math.floor(Math.random() * numArms);
+                const armIndex = Math.floor((angle / (Math.PI * 2)) * numArms);
                 const armAngleBase = (armIndex * Math.PI * 2) / numArms;
                 
                 const distanceInArm = (distance - 24) / 30;
