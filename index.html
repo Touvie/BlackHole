@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v3.1 - Defined Arms</div>
+    <div id="version-counter">v3.0 - True Logarithmic Spiral</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -351,39 +351,24 @@
         const spiralFactors = new Float32Array(count);
         
         for (let i = 0; i < count; i++) {
-            let angle, distance, t, armIndex, armOffset, spiralAngle, armWidth, variation;
-            let validParticle = false;
+            const angle = Math.random() * Math.PI * 2;
+            const t = Math.random();
+            const distance = 6 + Math.pow(t, 2.5) * 48; // Distance 6-54
 
-            // Régénérer jusqu'à obtenir une particule dans un bras
-            while (!validParticle) {
-                angle = Math.random() * Math.PI * 2;
-                t = Math.random();
-                distance = 6 + Math.pow(t, 2.5) * 48; // Distance 6-54
+            // === SPIRALE LOGARITHMIQUE GALACTIQUE ===
+            const numArms = 3;
+            const pitch = 0.3; // Angle de spirale
 
-                // === SPIRALE LOGARITHMIQUE GALACTIQUE ===
-                const numArms = 3;
-                const pitch = 0.3; // Angle de spirale
+            // Quel bras (déterminé par l'angle initial)
+            const armIndex = Math.floor((angle / (Math.PI * 2)) * numArms);
+            const armOffset = (armIndex * 2 * Math.PI / numArms);
 
-                // Quel bras (déterminé par l'angle initial)
-                armIndex = Math.floor((angle / (Math.PI * 2)) * numArms);
-                armOffset = (armIndex * 2 * Math.PI / numArms);
+            // Spirale logarithmique : θ = log(r/r0) / tan(pitch)
+            const spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
 
-                // Spirale logarithmique : θ = log(r/r0) / tan(pitch)
-                spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
-
-                // Distance angulaire normalisée du centre du bras (-1 à 1)
-                const angleInArm = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms);
-
-                // Filtrage : ne garder que les particules proches d'un bras
-                const threshold = 0.5; // Plus petit = bras plus fins
-                if (Math.abs(angleInArm) < threshold) {
-                    validParticle = true;
-                }
-            }
-
-            // Variation pour épaisseur des bras (augmentée)
-            armWidth = 1.0 * (1 - (distance - 6) / 48 * 0.6);
-            variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
+            // Variation pour épaisseur des bras (plus large au centre, plus fin aux extrémités)
+            const armWidth = 0.8 * (1 - (distance - 6) / 48 * 0.6);
+            const variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
 
             // Angle final = angle de base + spirale + décalage du bras + variation
             const finalAngle = angle + spiralAngle + armOffset + variation;
@@ -1353,7 +1338,7 @@
                 const armOffset = (armIndex * 2 * Math.PI / numArms);
                 const spiralAngle = Math.log(distance / 6) / Math.tan(pitch);
 
-                const armWidth = 1.0 * (1 - (distance - 6) / 48 * 0.6);
+                const armWidth = 0.8 * (1 - (distance - 6) / 48 * 0.6);
                 const variation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth;
 
                 const finalAngle = angle + spiralAngle + armOffset + variation;
