@@ -935,35 +935,35 @@
                 uniform float time;
 
                 void main() {
-                    // Distance normalisée (0 au centre, 1 aux bords de la lentille)
-                    float normalizedDist = (vDistanceFromCenter - 4.0) / 1.5;
+                    // Distance normalisée (0 au centre, 1 aux bords)
+                    float dist = vDistanceFromCenter / 5.5;
 
-                    // Effet de distorsion atmosphérique (heat haze)
+                    // Effet de Fresnel AMPLIFIÉ
                     vec3 viewDir = normalize(vPosition - cameraPosition);
-                    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 3.0);
+                    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 2.0);
 
-                    // Distorsion ondulante
-                    float distortion = sin(vPosition.x * 8.0 + time * 2.0) * 0.3;
-                    distortion += sin(vPosition.y * 6.0 - time * 1.5) * 0.25;
-                    distortion += sin(vPosition.z * 10.0 + time * 1.0) * 0.2;
+                    // Distorsions VISIBLES
+                    float wave1 = sin(vPosition.x * 5.0 + time * 2.0);
+                    float wave2 = sin(vPosition.y * 4.0 - time * 1.5);
+                    float wave3 = cos(vPosition.z * 6.0 + time);
+                    float distortion = (wave1 + wave2 + wave3) * 0.3;
 
-                    // Intensité de l'effet (plus fort près de l'horizon)
-                    float intensity = (1.0 - normalizedDist) * fresnel;
+                    // Couleurs irisées TRÈS VISIBLES
+                    vec3 rainbow = vec3(
+                        0.5 + 0.5 * sin(distortion * 4.0 + time + 0.0),
+                        0.5 + 0.5 * sin(distortion * 4.0 + time + 2.1),
+                        0.5 + 0.5 * sin(distortion * 4.0 + time + 4.2)
+                    );
 
-                    // Couleur de distorsion - irisée comme une lentille
-                    vec3 distortionColor = vec3(
-                        0.5 + 0.5 * sin(distortion * 3.0 + time),
-                        0.5 + 0.5 * sin(distortion * 3.0 + time + 2.0),
-                        0.5 + 0.5 * sin(distortion * 3.0 + time + 4.0)
-                    ) * 0.15;
+                    // Lueur gravitationnelle FORTE
+                    vec3 glowColor = vec3(1.0, 0.5, 0.1) * 2.0;
 
-                    // Lueur gravitationnelle orangée
-                    vec3 glowColor = vec3(1.0, 0.6, 0.2) * intensity * 0.4;
+                    // Combiner avec intensité forte
+                    vec3 finalColor = mix(glowColor, rainbow * 2.0, distortion * 0.5 + 0.5);
+                    finalColor *= fresnel;
 
-                    vec3 finalColor = glowColor + distortionColor * intensity;
-
-                    // Transparence dégradée
-                    float alpha = intensity * 0.6;
+                    // Alpha VISIBLE
+                    float alpha = fresnel * 0.8;
 
                     gl_FragColor = vec4(finalColor, alpha);
                 }
