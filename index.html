@@ -257,7 +257,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v1.5 - Spiral Sync</div>
+    <div id="version-counter">v1.6 - Spiral Coupling</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
     <button id="tp-button">📷 Vue fixe</button>
     <button id="coords-button">📍 Coordonnées</button>
@@ -1362,7 +1362,7 @@
                     const armAngle = armAngleBase + armSpiral + armVariation;
 
                     const armInfluence = Math.pow(distanceInArm, 1.5);
-                    finalAngle = finalAngle * (1 - armInfluence) + armAngle * armInfluence;
+                    finalAngle = finalAngle * (1 - armInfluence) + (armAngle + spiralAngle * 0.3) * armInfluence;
                 }
                 
                 positionsArray[i * 3] = Math.cos(finalAngle) * distance;
