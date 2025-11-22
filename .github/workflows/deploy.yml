@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - claude/deploy-index-fresh-01DbvF5dHvakc8xdx5vtxv3a
   workflow_dispatch:
 
 permissions:
