@@ -3,1405 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portail Trou Noir</title>
+    <title>Trou Noir - Version Finale Complète</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: black;
-            overflow-x: hidden;
-        }
-        
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 100;
-            filter: drop-shadow(0 0 25px rgba(255, 150, 50, 0.6)) 
-                    drop-shadow(0 0 50px rgba(255, 120, 0, 0.4));
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; margin: 0; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+
+        /* Styles Interface */
         #enter-button {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 150;
-            padding: 18px 50px;
-            font-size: 1.1rem;
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 150;
+            padding: 18px 50px; font-size: 1.1rem;
             background: radial-gradient(circle, rgba(255, 120, 0, 0.15) 0%, rgba(0, 0, 0, 0.3) 100%);
-            border: 2px solid rgba(255, 120, 0, 0.5);
-            color: white;
-            cursor: pointer;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-            transition: all 0.4s ease;
-            font-family: Arial, sans-serif;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            box-shadow: 0 0 30px rgba(255, 120, 0, 0.3),
-                        inset 0 0 20px rgba(255, 120, 0, 0.1);
+            border: 2px solid rgba(255, 120, 0, 0.5); color: white; cursor: pointer;
+            border-radius: 50px; backdrop-filter: blur(10px); transition: all 0.4s ease;
+            font-family: Arial, sans-serif; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+            box-shadow: 0 0 30px rgba(255, 120, 0, 0.3);
             animation: pulse-glow 2s ease-in-out infinite;
         }
-        
         @keyframes pulse-glow {
-            0%, 100% {
-                box-shadow: 0 0 30px rgba(255, 120, 0, 0.3),
-                            inset 0 0 20px rgba(255, 120, 0, 0.1);
-                border-color: rgba(255, 120, 0, 0.5);
-            }
-            50% {
-                box-shadow: 0 0 50px rgba(255, 120, 0, 0.6),
-                            inset 0 0 30px rgba(255, 120, 0, 0.2);
-                border-color: rgba(255, 120, 0, 0.8);
-            }
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 120, 0, 0.3); border-color: rgba(255, 120, 0, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(255, 120, 0, 0.6); border-color: rgba(255, 120, 0, 0.8); }
         }
-        
         #enter-button:hover {
-            background: radial-gradient(circle, rgba(255, 120, 0, 0.25) 0%, rgba(0, 0, 0, 0.4) 100%);
             transform: translateX(-50%) scale(1.05);
-            box-shadow: 0 0 60px rgba(255, 120, 0, 0.8),
-                        inset 0 0 30px rgba(255, 120, 0, 0.3);
+            background: radial-gradient(circle, rgba(255, 120, 0, 0.25) 0%, rgba(0, 0, 0, 0.4) 100%);
         }
-        
-        #enter-button.hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateX(-50%) scale(0.8);
-        }
-        
-        #tp-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 150;
-            padding: 12px 24px;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            cursor: pointer;
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            font-family: Arial, sans-serif;
-            font-weight: 500;
-        }
-        
-        #tp-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: scale(1.05);
-        }
-        
-        #tp-button.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        #coords-button {
-            position: fixed;
-            top: 20px;
-            right: 140px;
-            z-index: 150;
-            padding: 12px 24px;
-            font-size: 0.9rem;
-            background: rgba(0, 200, 255, 0.1);
-            border: 1px solid rgba(0, 200, 255, 0.3);
-            color: white;
-            cursor: pointer;
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            font-family: Arial, sans-serif;
-            font-weight: 500;
-        }
-        
-        #coords-button:hover {
-            background: rgba(0, 200, 255, 0.2);
-            border-color: rgba(0, 200, 255, 0.5);
-            transform: scale(1.05);
-        }
-        
-        #coords-button.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        #regroup-button {
-            position: fixed;
-            top: 20px;
-            right: 280px;
-            z-index: 150;
-            padding: 12px 24px;
-            font-size: 0.9rem;
-            background: rgba(255, 100, 255, 0.1);
-            border: 1px solid rgba(255, 100, 255, 0.3);
-            color: white;
-            cursor: pointer;
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            font-family: Arial, sans-serif;
-            font-weight: 500;
-        }
-        
-        #regroup-button:hover {
-            background: rgba(255, 100, 255, 0.2);
-            border-color: rgba(255, 100, 255, 0.5);
-            transform: scale(1.05);
-        }
-        
-        #regroup-button.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+        #enter-button.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
 
-        #version-counter {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 150;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #00ff00;
-            border-radius: 6px;
-            backdrop-filter: blur(10px);
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-        }
-        
-        #coords-display {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            z-index: 150;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(0, 200, 255, 0.5);
-            color: #00d4ff;
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            display: none;
-        }
-        
-        #coords-display.visible {
-            display: block;
-        }
-        
-        .spacer {
-            height: 0;
-            position: relative;
-            z-index: 1;
-        }
-        
         .content {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            background: black;
-            padding: 100px 50px;
-            color: white;
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(0.8);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 2s ease; z-index: 200;
         }
-        
-        .content.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        .content-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .content h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: white;
-        }
-        
-        .content p {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            color: white;
-        }
-        
-        .content-box {
-            background: #1a1a1a;
-            padding: 50px;
-            border-radius: 10px;
-            margin-top: 50px;
-            color: white;
-        }
-        
-        #reveal-circle {
-            display: none;
+        .content.visible { opacity: 1; pointer-events: auto; }
+        .content h1 { 
+            color: white; font-family: Arial, sans-serif; font-size: 4rem; 
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); 
         }
     </style>
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="version-counter">v1.2 - Junction Z Equator</div>
     <button id="enter-button">⚫ Entrer ⚫</button>
-    <button id="tp-button">📷 Vue fixe</button>
-    <button id="coords-button">📍 Coordonnées</button>
-    <button id="regroup-button" onclick="window.toggleRegroup()">🔄 Test Regroup</button>
-    <div id="coords-display"></div>
-    <div id="reveal-circle"></div>
-    
-    <div class="spacer"></div>
-    
+
     <div class="content">
-        <div class="content-inner">
-            <h1>Bienvenue</h1>
-            <p>Vous avez traversé le trou noir 🌌</p>
-            <div class="content-box">
-                <h2>Contenu du site</h2>
-                <p>Ton contenu commence ici...</p>
-            </div>
-        </div>
+        <h1>Singularité Atteinte</h1>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Configuration Scène ---
         const container = document.getElementById('canvas-container');
-        const revealCircle = document.getElementById('reveal-circle');
-        
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // Pas de fog pour garder le fond net
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 3000);
+        camera.position.set(0, 20, 60);
+
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setClearColor(0x000000);
         container.appendChild(renderer.domElement);
-        
-        const PHI = (1 + Math.sqrt(5)) / 2;
-        const GOLDEN_ANGLE = Math.PI * 2 / (PHI * PHI);
-        
-        const particleMaterial = new THREE.ShaderMaterial({
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 0.1;
+        controls.maxDistance = 250;
+        controls.enablePan = false;
+        controls.autoRotate = false; // Pas de rotation auto qui donne le tournis
+
+        const textureLoader = new THREE.TextureLoader();
+
+        // --- Fonctions GLSL Utilitaires (Bruit) ---
+        const noiseFunctions = `
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+            float snoise(vec3 v) {
+                const vec2  C = vec2(1.0/6.0, 1.0/3.0) ; const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
+                vec3 i  = floor(v + dot(v, C.yyy) ); vec3 x0 = v - i + dot(i, C.xxx) ;
+                vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g;
+                vec3 i1 = min( g.xyz, l.zxy ); vec3 i2 = max( g.xyz, l.zxy );
+                vec3 x1 = x0 - i1 + C.xxx; vec3 x2 = x0 - i2 + C.yyy; vec3 x3 = x0 - D.yyy;
+                i = mod289(i);
+                vec4 p = permute( permute( permute( i.z + vec4(0.0, i1.z, i2.z, 1.0 )) + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+                float n_ = 0.142857142857; vec3  ns = n_ * D.wyz - D.xzx;
+                vec4 j = p - 49.0 * floor(p * ns.z * ns.z); vec4 x_ = floor(j * ns.z); vec4 y_ = floor(j - 7.0 * x_ );
+                vec4 x = x_ *ns.x + ns.yyyy; vec4 y = y_ *ns.x + ns.yyyy; vec4 h = 1.0 - abs(x) - abs(y);
+                vec4 b0 = vec4( x.xy, y.xy ); vec4 b1 = vec4( x.zw, y.zw );
+                vec4 s0 = floor(b0)*2.0 + 1.0; vec4 s1 = floor(b1)*2.0 + 1.0;
+                vec4 sh = -step(h, vec4(0.0));
+                vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ; vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+                vec3 p0 = vec3(a0.xy,h.x); vec3 p1 = vec3(a0.zw,h.y); vec3 p2 = vec3(a1.xy,h.z); vec3 p3 = vec3(a1.zw,h.w);
+                vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+                p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+                vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0); m = m * m;
+                return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );
+            }
+        `;
+
+        // ==========================================
+        // 1. FOND DEEP SPACE (Image Contrastée)
+        // ==========================================
+        const milkyWayUrl = 'https://cdn.eso.org/images/large/eso0932a.jpg';
+        const bgGeo = new THREE.SphereGeometry(1500, 64, 64);
+        bgGeo.scale(-1, 1, 1); // Vue de l'intérieur
+
+        const bgMat = new THREE.ShaderMaterial({
             uniforms: {
-                time: { value: 0 },
-                opacity: { value: 1.0 }
+                u_texture: { value: textureLoader.load(milkyWayUrl) }
             },
-            vertexShader: `
-                uniform float time;
-                attribute float size;
-                attribute vec3 customColor;
-                attribute float luminosity;
-                varying vec3 vColor;
-                varying float vAlpha;
-                varying float vLuminosity;
-                
-                void main() {
-                    vColor = customColor;
-                    vLuminosity = luminosity;
-                    vec3 pos = position;
-                    float dist = length(pos.xy);
-                    float maxDist = 50.0;
-                    vAlpha = 0.7 + 0.3 * (1.0 - dist / maxDist);
-                    
-                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                    gl_PointSize = size * (300.0 / -mvPosition.z);
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
+            vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
             fragmentShader: `
-                uniform float opacity;
-                varying vec3 vColor;
-                varying float vAlpha;
-                varying float vLuminosity;
-                
+                uniform sampler2D u_texture;
+                varying vec2 vUv;
                 void main() {
-                    float dist = length(gl_PointCoord - vec2(0.5));
-                    if (dist > 0.5) discard;
-                    float alpha = (1.0 - smoothstep(0.0, 0.5, dist)) * opacity * vAlpha;
-                    vec3 brightColor = vColor * vLuminosity;
-                    gl_FragColor = vec4(brightColor, alpha);
+                    vec4 texColor = texture2D(u_texture, vUv);
+                    // Boost du contraste pour des noirs profonds
+                    texColor.rgb = pow(texColor.rgb, vec3(3.0));
+                    texColor.rgb *= 1.5; // Rehausse la lumière
+                    gl_FragColor = vec4(texColor.rgb, 1.0);
                 }
-            `,
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending
+            `
         });
-        
-        const count = 200000;
-        const positions = new Float32Array(count * 3);
-        const colors = new Float32Array(count * 3);
-        const sizes = new Float32Array(count);
-        const luminosities = new Float32Array(count);
-        const initialDistances = new Float32Array(count);
-        const initialAngles = new Float32Array(count);
-        const spiralFactors = new Float32Array(count);
-        
-        for (let i = 0; i < count; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const t = Math.random();
-            
-            let distance;
-            let armOffset = 0;
-            let useArms = false;
-            
-            if (t < 0.75) {
-                const t2 = t / 0.75;
-                distance = 6 + Math.pow(t2, 2.5) * 18; // Commence à 6 au lieu de 2
-            } else {
-                const t2 = (t - 0.75) / 0.25;
-                distance = 24 + t2 * 30; // Ajusté pour compenser
-                
-                const numArms = 3;
-                const armIndex = Math.floor(Math.random() * numArms);
-                const armAngleBase = (armIndex * Math.PI * 2) / numArms;
-                
-                const distanceInArm = (distance - 24) / 30;
-                const armWidth = 1.5 - distanceInArm * 1.2;
-                const armVariation = (Math.random() - 0.5) * armWidth;
-                
-                const armSpiral = -distanceInArm * Math.PI * 0.6;
-                
-                armOffset = -armAngleBase + armSpiral + armVariation;
-                useArms = true;
-            }
-            
-            const spiralFactor = Math.random() * 0.5 + 0.5;
-            
-            initialAngles[i] = angle;
-            initialDistances[i] = distance;
-            spiralFactors[i] = spiralFactor;
-            
-            const spiralAngle = -GOLDEN_ANGLE * Math.log(distance / 6) * spiralFactor; // Ajusté pour distance 6
-            let finalAngle = angle + spiralAngle;
-            
-            if (useArms) {
-                const distanceInArm = (distance - 24) / 30;
-                const armInfluence = Math.pow(distanceInArm, 1.5);
-                finalAngle = finalAngle * (1 - armInfluence) + (armOffset + spiralAngle * 0.3) * armInfluence;
-            }
-            
-            positions[i * 3] = Math.cos(finalAngle) * distance;
-            positions[i * 3 + 1] = Math.sin(finalAngle) * distance;
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 0.15;
-            
-            const colorT = (distance - 6) / 48; // Ajusté pour distance 6
-            if (colorT < 0.2) {
-                colors[i * 3] = 1.0;
-                colors[i * 3 + 1] = 0.75;
-                colors[i * 3 + 2] = 0.3;
-            } else if (colorT < 0.5) {
-                const blend = (colorT - 0.2) / 0.3;
-                colors[i * 3] = 1.0;
-                colors[i * 3 + 1] = 0.65 - blend * 0.1;
-                colors[i * 3 + 2] = 0.25 - blend * 0.1;
-            } else {
-                const blend = (colorT - 0.5) / 0.5;
-                colors[i * 3] = 0.9 - blend * 0.1;
-                colors[i * 3 + 1] = 0.55 - blend * 0.15;
-                colors[i * 3 + 2] = 0.15 - blend * 0.05;
-            }
-            
-            const lumT = Math.min((distance - 6) / 28, 1.0); // Ajusté pour distance 6
-            if (distance <= 34) { // Ajusté
-                luminosities[i] = 120.0 - lumT * 50.0;
-            } else {
-                const farT = (distance - 34) / 20;
-                luminosities[i] = 70.0 - farT * 30.0;
-            }
-            
-            const sizeT = Math.min((distance - 6) / 28, 1.0); // Ajusté pour distance 6
-            let sizeMultiplier;
-            if (distance <= 34) { // Ajusté
-                sizeMultiplier = 5.0 - sizeT * 4.0;
-            } else {
-                const farT = (distance - 34) / 20;
-                sizeMultiplier = 1.0 - farT * 0.5;
-            }
-            sizes[i] = (0.03 + Math.random() * 0.04) * sizeMultiplier;
-        }
-        
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
-        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-        geometry.setAttribute('luminosity', new THREE.BufferAttribute(luminosities, 1));
-        
-        const points = new THREE.Points(geometry, particleMaterial);
-        points.rotation.x = Math.PI / 2;
-        scene.add(points);
-        
-        // === PHOTON RING - Anneaux superposés pour effet 3D ===
-        const numRings = 3;
-        const particlesPerRing = 6000;
-        const photonRingCount = numRings * particlesPerRing;
-        
-        const photonPositions = new Float32Array(photonRingCount * 3);
-        const photonColors = new Float32Array(photonRingCount * 3);
-        const photonSizes = new Float32Array(photonRingCount);
-        const photonLuminosities = new Float32Array(photonRingCount);
-        const photonRingIndices = new Float32Array(photonRingCount); // Quel anneau
-        
-        const photonRadiusMin = 4.3;
-        const photonRadiusMax = 5.2;
-        
-        // Données pour chaque anneau
-        const ringRotations = [0, 0, 0]; // Angles de rotation actuels
-        const ringRotationSpeeds = [
-            0.030 + Math.random() * 0.010,
-            0.030 + Math.random() * 0.010,
-            0.030 + Math.random() * 0.010
-        ]; // Vitesses très rapides entre 0.030 et 0.040
-        
-        // Générer des axes de rotation aléatoires pour chaque anneau
-        const ringAxes = [];
-        for (let i = 0; i < numRings; i++) {
-            const axis = new THREE.Vector3(
-                Math.random() * 2 - 1,
-                Math.random() * 2 - 1,
-                Math.random() * 2 - 1
-            ).normalize();
-            ringAxes.push(axis);
-        }
+        const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+        bgMesh.rotation.x = Math.PI * 0.1;
+        bgMesh.rotation.z = Math.PI * 0.15;
+        scene.add(bgMesh);
 
-        // Axes cibles pour le regroupement (jonction aux pôles)
-        const targetAxes = [
-            new THREE.Vector3(0, 1, 0), // Axe Y pour jonction aux pôles (vertical)
-            new THREE.Vector3(0, 1, 0),
-            new THREE.Vector3(0, 1, 0)
-        ];
-        
-        const targetTilts = [-Math.PI / 9, 0, Math.PI / 9]; // -20°, 0°, +20°
-        const alignRotation = -17.74 * Math.PI / 180; // Rotation Z pour orienter jonction vers caméra
-        
-        for (let ringIdx = 0; ringIdx < numRings; ringIdx++) {
-            const baseIndex = ringIdx * particlesPerRing;
-            const tiltAngle = (ringIdx * Math.PI / 36); // 0°, 5°, 10° (au lieu de 0°, 15°, 30°)
-            
-            for (let i = 0; i < particlesPerRing; i++) {
-                const idx = baseIndex + i;
-                const angle = (i / particlesPerRing) * Math.PI * 2;
-                
-                photonRingIndices[idx] = ringIdx;
-                
-                // Rayon avec distribution gaussienne
-                const t = Math.random();
-                const gaussianT = (t + Math.random() + Math.random()) / 3;
-                const radius = photonRadiusMin + gaussianT * (photonRadiusMax - photonRadiusMin);
-                
-                // Position sur l'anneau horizontal
-                let x = Math.cos(angle) * radius;
-                let y = Math.sin(angle) * radius;
-                let z = (Math.random() - 0.5) * 0.08;
-                
-                // Rotation selon l'inclinaison
-                const yRotated = y * Math.cos(tiltAngle) - z * Math.sin(tiltAngle);
-                const zRotated = y * Math.sin(tiltAngle) + z * Math.cos(tiltAngle);
-                
-                photonPositions[idx * 3] = x;
-                photonPositions[idx * 3 + 1] = yRotated;
-                photonPositions[idx * 3 + 2] = zRotated;
-                
-                // Couleur blanc-orange intense
-                const colorVariation = Math.random() * 0.2;
-                photonColors[idx * 3] = 1.0;
-                photonColors[idx * 3 + 1] = 0.88 + colorVariation * 0.12;
-                photonColors[idx * 3 + 2] = 0.6 + colorVariation * 0.2;
-                
-                // Luminosité
-                const tiltFactor = 1.0 - (ringIdx / numRings) * 0.2;
-                photonLuminosities[idx] = (450.0 + Math.random() * 250.0) * tiltFactor;
-                
-                photonSizes[idx] = 0.16 + Math.random() * 0.08;
+        // ==========================================
+        // 2. COUCHE NÉBULEUSE (Warped)
+        // ==========================================
+        const nebulaGeo = new THREE.SphereGeometry(1400, 64, 64);
+        const nebulaFragmentShader = `
+            uniform float u_time; varying vec3 vPos; ${noiseFunctions}
+            float fbm(vec3 p) { float f = 0.0; f += 0.500 * snoise(p); p *= 2.02; f += 0.250 * snoise(p); p *= 2.03; f += 0.125 * snoise(p); return f * 0.5 + 0.5; }
+            vec3 warp(vec3 p) { vec3 q = vec3(snoise(p), snoise(p + vec3(5.2, 1.3, 2.8)), snoise(p + vec3(8.1, 2.4, 1.1))); return p + q * 0.5; }
+            void main() {
+                vec3 dir = normalize(vPos); float time = u_time * 0.02;
+                vec3 warpedDir = warp(dir * 1.2 + vec3(time * 0.1));
+                float mask = smoothstep(0.2, 0.8, snoise(warpedDir) * 0.6 + snoise(dir * 2.0 - time * 0.1) * 0.4);
+                float density = mask * fbm(warpedDir * 3.0 + vec3(0.0, time*0.2, 0.0));
+                float zoneMix = smoothstep(-0.3, 0.3, snoise(warp(dir * 0.5 + vec3(10.0)) * 1.5));
+                vec3 blueCloud = mix(vec3(0.0, 0.0, 0.1), vec3(0.2, 0.4, 0.8), density);
+                vec3 redCloud = mix(vec3(0.1, 0.0, 0.0), vec3(0.8, 0.3, 0.1), density);
+                vec3 finalCloudColor = mix(blueCloud, redCloud, zoneMix);
+                gl_FragColor = vec4(finalCloudColor * 1.5, density * 0.3);
             }
-        }
-        
-        const photonRingGeometry = new THREE.BufferGeometry();
-        photonRingGeometry.setAttribute('position', new THREE.BufferAttribute(photonPositions, 3));
-        photonRingGeometry.setAttribute('customColor', new THREE.BufferAttribute(photonColors, 3));
-        photonRingGeometry.setAttribute('size', new THREE.BufferAttribute(photonSizes, 1));
-        photonRingGeometry.setAttribute('luminosity', new THREE.BufferAttribute(photonLuminosities, 1));
-        
-        // Stocker les positions initiales pour la rotation
-        const photonInitialPositions = new Float32Array(photonRingCount * 3);
-        for (let i = 0; i < photonRingCount * 3; i++) {
-            photonInitialPositions[i] = photonPositions[i];
-        }
-
-        // Stocker les VRAIES positions de base (cercle plat, avant toute rotation)
-        // En inversant la rotation initiale qui a été appliquée
-        const photonBasePositions = new Float32Array(photonRingCount * 3);
-        for (let ringIdx = 0; ringIdx < numRings; ringIdx++) {
-            const baseIndex = ringIdx * particlesPerRing;
-            const initialTilt = (ringIdx * Math.PI / 36); // 0°, 5°, 10° - rotation initiale
-
-            for (let i = 0; i < particlesPerRing; i++) {
-                const idx = baseIndex + i;
-
-                // Position actuelle (après rotation initiale)
-                const x = photonInitialPositions[idx * 3];
-                const yRotated = photonInitialPositions[idx * 3 + 1];
-                const zRotated = photonInitialPositions[idx * 3 + 2];
-
-                // Inverser la rotation initiale pour obtenir le cercle plat de base
-                const y = yRotated * Math.cos(initialTilt) + zRotated * Math.sin(initialTilt);
-                const z = -yRotated * Math.sin(initialTilt) + zRotated * Math.cos(initialTilt);
-
-                photonBasePositions[idx * 3] = x;
-                photonBasePositions[idx * 3 + 1] = y;
-                photonBasePositions[idx * 3 + 2] = z;
-            }
-        }
-        
-        const photonRingMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0 },
-                opacity: { value: 1.0 }
-            },
-            vertexShader: `
-                uniform float time;
-                attribute float size;
-                attribute vec3 customColor;
-                attribute float luminosity;
-                varying vec3 vColor;
-                varying float vLuminosity;
-                
-                void main() {
-                    vColor = customColor;
-                    // Pulse de luminosité
-                    vLuminosity = luminosity * (0.85 + 0.15 * sin(time * 2.0));
-                    
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = size * (300.0 / -mvPosition.z);
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
-            fragmentShader: `
-                uniform float opacity;
-                varying vec3 vColor;
-                varying float vLuminosity;
-                
-                void main() {
-                    float dist = length(gl_PointCoord - vec2(0.5));
-                    if (dist > 0.5) discard;
-                    float alpha = (1.0 - smoothstep(0.0, 0.5, dist)) * opacity;
-                    vec3 brightColor = vColor * vLuminosity;
-                    gl_FragColor = vec4(brightColor, alpha);
-                }
-            `,
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending
+        `;
+        const nebulaMat = new THREE.ShaderMaterial({
+            uniforms: { u_time: { value: 0 } },
+            vertexShader: `varying vec3 vPos; void main() { vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+            fragmentShader: nebulaFragmentShader, 
+            side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending
         });
-        
-        const photonRing = new THREE.Points(photonRingGeometry, photonRingMaterial);
-        photonRing.rotation.x = Math.PI / 2; // Alignement avec la spirale (équateur en mode idle)
-        scene.add(photonRing);
-        
-        const starsCount = 3000;
-        const starsPositions = new Float32Array(starsCount * 3);
-        const starsColors = new Float32Array(starsCount * 3);
-        const starsSizes = new Float32Array(starsCount);
-        
-        for (let i = 0; i < starsCount; i++) {
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            const radius = 200 + Math.random() * 100;
-            
-            starsPositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-            starsPositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-            starsPositions[i * 3 + 2] = radius * Math.cos(phi);
-            
-            const starType = Math.random();
-            if (starType < 0.6) {
-                starsColors[i * 3] = 1.0;
-                starsColors[i * 3 + 1] = 1.0;
-                starsColors[i * 3 + 2] = 1.0;
-            } else if (starType < 0.8) {
-                starsColors[i * 3] = 0.7;
-                starsColors[i * 3 + 1] = 0.8;
-                starsColors[i * 3 + 2] = 1.0;
-            } else if (starType < 0.95) {
-                starsColors[i * 3] = 1.0;
-                starsColors[i * 3 + 1] = 0.9;
-                starsColors[i * 3 + 2] = 0.6;
-            } else {
-                starsColors[i * 3] = 1.0;
-                starsColors[i * 3 + 1] = 0.5;
-                starsColors[i * 3 + 2] = 0.3;
-            }
-            
-            starsSizes[i] = 0.03 + Math.random() * 0.05;
+        const nebulaSphere = new THREE.Mesh(nebulaGeo, nebulaMat);
+        scene.add(nebulaSphere);
+
+        // ==========================================
+        // 3. ETOILES (Particules)
+        // ==========================================
+        const starsCount = 4000; const starsGeo = new THREE.BufferGeometry(); const starsPos = new Float32Array(starsCount * 3);
+        for(let i=0; i<starsCount; i++) {
+            const r = 500 + Math.random() * 800; const theta = Math.random() * Math.PI * 2; const phi = Math.acos(2 * Math.random() - 1);
+            starsPos[i*3] = r * Math.sin(phi) * Math.cos(theta); starsPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta); starsPos[i*3+2] = r * Math.cos(phi);
         }
-        
-        const starsGeometry = new THREE.BufferGeometry();
-        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPositions, 3));
-        starsGeometry.setAttribute('customColor', new THREE.BufferAttribute(starsColors, 3));
-        starsGeometry.setAttribute('size', new THREE.BufferAttribute(starsSizes, 1));
-        
-        const starsMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                opacity: { value: 0.6 }
-            },
-            vertexShader: `
-                attribute float size;
-                attribute vec3 customColor;
-                varying vec3 vColor;
-                
-                void main() {
-                    vColor = customColor;
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = size * (300.0 / -mvPosition.z);
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
-            fragmentShader: `
-                uniform float opacity;
-                varying vec3 vColor;
-                
-                void main() {
-                    float dist = length(gl_PointCoord - vec2(0.5));
-                    if (dist > 0.5) discard;
-                    float alpha = (1.0 - smoothstep(0.3, 0.5, dist)) * opacity;
-                    gl_FragColor = vec4(vColor, alpha);
-                }
-            `,
-            transparent: true,
-            depthWrite: false
-        });
-        
-        const stars = new THREE.Points(starsGeometry, starsMaterial);
+        starsGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+        const stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, transparent: true, opacity: 0.8 }));
         scene.add(stars);
+
+        // ==========================================
+        // 4. LE TROU NOIR (Solide)
+        // ==========================================
+        const BH_RADIUS = 4.0;
         
-        const nebulaCount = 1000;
-        const nebulaPositions = new Float32Array(nebulaCount * 3);
-        const nebulaColors = new Float32Array(nebulaCount * 3);
-        const nebulaSizes = new Float32Array(nebulaCount);
+        // Sphère Noire
+        const coreGeo = new THREE.SphereGeometry(BH_RADIUS, 64, 64);
+        const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
+        const blackHole = new THREE.Mesh(coreGeo, coreMat);
+        scene.add(blackHole);
+
+        // Glow (Anneau de photons)
+        const glowGeo = new THREE.SphereGeometry(BH_RADIUS * 1.05, 64, 64);
+        const glowMat = new THREE.ShaderMaterial({
+            uniforms: { glowColor: { value: new THREE.Color(0xffaa33) }, viewVector: { value: new THREE.Vector3() }, power: { value: 3.5 }, intensity: { value: 1.4 } },
+            vertexShader: `uniform vec3 viewVector; varying float vIntensity; uniform float power; void main() { vec3 vNormal = normalize(normalMatrix * normal); vec3 vNormel = normalize(normalMatrix * viewVector); vIntensity = pow(0.7 - dot(vNormal, vNormel), power); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+            fragmentShader: `uniform vec3 glowColor; uniform float intensity; varying float vIntensity; void main() { vec3 glow = glowColor * vIntensity * intensity; gl_FragColor = vec4(glow, 1.0); }`,
+            side: THREE.BackSide, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false
+        });
+        const glowSphere = new THREE.Mesh(glowGeo, glowMat);
+        scene.add(glowSphere);
+
+        // ==========================================
+        // 5. DISQUE D'ACCRÉTION (Sans coupure + Anti-Essorage)
+        // ==========================================
+        const diskGeo = new THREE.RingGeometry(BH_RADIUS * 1.1, 60.0, 256, 1);
         
-        for (let i = 0; i < nebulaCount; i++) {
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            const radius = 200 + Math.random() * 100;
-            
-            nebulaPositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-            nebulaPositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-            nebulaPositions[i * 3 + 2] = radius * Math.cos(phi);
-            
-            const nebulaType = Math.random();
-            if (nebulaType < 0.4) {
-                nebulaColors[i * 3] = 0.5 + Math.random() * 0.3;
-                nebulaColors[i * 3 + 1] = 0.2;
-                nebulaColors[i * 3 + 2] = 0.8;
-            } else if (nebulaType < 0.7) {
-                nebulaColors[i * 3] = 0.2;
-                nebulaColors[i * 3 + 1] = 0.5 + Math.random() * 0.3;
-                nebulaColors[i * 3 + 2] = 0.9;
-            } else {
-                nebulaColors[i * 3] = 0.9;
-                nebulaColors[i * 3 + 1] = 0.3;
-                nebulaColors[i * 3 + 2] = 0.5 + Math.random() * 0.3;
+        const diskShaderFragment = `
+            varying vec3 vPos;
+            uniform float u_time;
+            ${noiseFunctions}
+
+            // Rotation 2D
+            mat2 rotate2d(float angle){
+                return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
             }
-            
-            nebulaSizes[i] = 0.5 + Math.random() * 1.5;
-        }
-        
-        const nebulaGeometry = new THREE.BufferGeometry();
-        nebulaGeometry.setAttribute('position', new THREE.BufferAttribute(nebulaPositions, 3));
-        nebulaGeometry.setAttribute('customColor', new THREE.BufferAttribute(nebulaColors, 3));
-        nebulaGeometry.setAttribute('size', new THREE.BufferAttribute(nebulaSizes, 1));
-        
-        const nebulaMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                opacity: { value: 0.15 }
-            },
-            vertexShader: `
-                attribute float size;
-                attribute vec3 customColor;
-                varying vec3 vColor;
+
+            void main() {
+                vec3 pos = vPos;
+                float r = length(pos.xy);
                 
-                void main() {
-                    vColor = customColor;
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = size * (300.0 / -mvPosition.z);
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
-            fragmentShader: `
-                uniform float opacity;
-                varying vec3 vColor;
+                // --- LOGIQUE SPIRALE & ANTI-ESSORAGE ---
                 
-                void main() {
-                    float dist = length(gl_PointCoord - vec2(0.5));
-                    if (dist > 0.5) discard;
-                    float alpha = (1.0 - smoothstep(0.0, 0.5, dist)) * opacity;
-                    gl_FragColor = vec4(vColor, alpha);
-                }
-            `,
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending
-        });
-        
-        const nebula = new THREE.Points(nebulaGeometry, nebulaMaterial);
-        scene.add(nebula);
-        
-        const galaxyCount = 15000;
-        const galaxyPositions = new Float32Array(galaxyCount * 3);
-        const galaxyColors = new Float32Array(galaxyCount * 3);
-        const galaxySizes = new Float32Array(galaxyCount);
-        
-        for (let i = 0; i < galaxyCount; i++) {
-            const clusterAngle = Math.random() * Math.PI * 2;
-            const clusterDist = 200 + Math.random() * 80;
-            
-            const centerX = Math.cos(clusterAngle) * clusterDist;
-            const centerY = 50 + (Math.random() - 0.5) * 100;
-            const centerZ = 50 + Math.sin(clusterAngle) * clusterDist;
-            
-            const spreadX = (Math.random() - 0.5) * 80;
-            const spreadY = (Math.random() - 0.5) * 60;
-            const spreadZ = (Math.random() - 0.5) * 40;
-            
-            galaxyPositions[i * 3] = centerX + spreadX;
-            galaxyPositions[i * 3 + 1] = centerY + spreadY;
-            galaxyPositions[i * 3 + 2] = centerZ + spreadZ;
-            
-            const nebulaType = Math.random();
-            const intensity = 0.8 + Math.random() * 0.2;
-            
-            if (nebulaType < 0.3) {
-                galaxyColors[i * 3] = 1.0 * intensity;
-                galaxyColors[i * 3 + 1] = 0.2 * intensity;
-                galaxyColors[i * 3 + 2] = 0.9 * intensity;
-            } else if (nebulaType < 0.5) {
-                galaxyColors[i * 3] = 0.1 * intensity;
-                galaxyColors[i * 3 + 1] = 0.9 * intensity;
-                galaxyColors[i * 3 + 2] = 1.0 * intensity;
-            } else if (nebulaType < 0.7) {
-                galaxyColors[i * 3] = 0.6 * intensity;
-                galaxyColors[i * 3 + 1] = 0.2 * intensity;
-                galaxyColors[i * 3 + 2] = 1.0 * intensity;
-            } else if (nebulaType < 0.85) {
-                galaxyColors[i * 3] = 1.0 * intensity;
-                galaxyColors[i * 3 + 1] = 0.4 * intensity;
-                galaxyColors[i * 3 + 2] = 0.1 * intensity;
-            } else {
-                galaxyColors[i * 3] = 0.3 * intensity;
-                galaxyColors[i * 3 + 1] = 1.0 * intensity;
-                galaxyColors[i * 3 + 2] = 0.4 * intensity;
-            }
-            
-            galaxySizes[i] = 0.5 + Math.random() * 1.5;
-        }
-        
-        const galaxyGeometry = new THREE.BufferGeometry();
-        galaxyGeometry.setAttribute('position', new THREE.BufferAttribute(galaxyPositions, 3));
-        galaxyGeometry.setAttribute('customColor', new THREE.BufferAttribute(galaxyColors, 3));
-        galaxyGeometry.setAttribute('size', new THREE.BufferAttribute(galaxySizes, 1));
-        
-        const galaxyMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                opacity: { value: 0.8 }
-            },
-            vertexShader: `
-                attribute float size;
-                attribute vec3 customColor;
-                varying vec3 vColor;
+                // 1. Forme de spirale logarithmique
+                float twistAngle = 3.0 * log(r);
                 
-                void main() {
-                    vColor = customColor;
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = size * (300.0 / -mvPosition.z);
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
-            fragmentShader: `
-                uniform float opacity;
-                varying vec3 vColor;
+                // 2. Clamp du temps de cisaillement (Shear)
+                // Arrête de déformer après 20s
+                float shearTime = min(u_time, 20.0);
                 
-                void main() {
-                    float dist = length(gl_PointCoord - vec2(0.5));
-                    if (dist > 0.5) discard;
-                    float alpha = (1.0 - smoothstep(0.2, 0.5, dist)) * opacity;
-                    gl_FragColor = vec4(vColor, alpha);
-                }
-            `,
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending
-        });
-        
-        const galaxy = new THREE.Points(galaxyGeometry, galaxyMaterial);
-        scene.add(galaxy);
-        
-        const eventHorizonGeometry = new THREE.SphereGeometry(4.0, 64, 64);
-        const eventHorizonMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x000000
-        });
-        const eventHorizon = new THREE.Mesh(eventHorizonGeometry, eventHorizonMaterial);
-        scene.add(eventHorizon);
+                // Vitesse différentielle (plus vite au centre)
+                float shearSpeed = 2.0 / (r * 0.5 + 0.1);
+                float shearOffset = shearTime * shearSpeed;
+                
+                // 3. Rotation Globale (continue pour toujours)
+                float globalSpeed = 0.2;
+                float globalOffset = u_time * globalSpeed;
 
-        // Helper pour visualiser les axes : Rouge=X, Vert=Y, Bleu=Z
-        const createAxis = (color, direction, size = 50) => {
-            const group = new THREE.Group();
+                // Application
+                twistAngle -= (shearOffset + globalOffset);
 
-            // Ligne d'axe
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array([
-                0, 0, 0,
-                direction.x * size, direction.y * size, direction.z * size
-            ]);
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            const material = new THREE.LineBasicMaterial({
-                color: color,
-                linewidth: 5,
-                depthTest: false,
-                depthWrite: false
-            });
-            const line = new THREE.Line(geometry, material);
-            group.add(line);
+                // 4. Torsion de l'espace (pas de coupure)
+                vec2 twistedCoords = rotate2d(twistAngle) * pos.xy;
 
-            // Sphère à l'extrémité
-            const sphereGeometry = new THREE.SphereGeometry(2, 16, 16);
-            const sphereMaterial = new THREE.MeshBasicMaterial({
-                color: color,
-                depthTest: false,
-                depthWrite: false
-            });
-            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-            sphere.position.set(direction.x * size, direction.y * size, direction.z * size);
-            group.add(sphere);
+                // 5. Bruit Fractal
+                // u_time ici permet au feu de continuer à "bouger" sur place
+                float noiseVal = snoise(vec3(twistedCoords * 0.2, u_time * 0.15));
+                noiseVal += 0.5 * snoise(vec3(twistedCoords * 0.6, u_time * 0.2));
+                noiseVal = noiseVal * 0.5 + 0.5;
 
-            return group;
-        };
+                // Structure des bras
+                float arms = smoothstep(0.3, 0.7, noiseVal);
 
-        const axisX = createAxis(0xff0000, new THREE.Vector3(1, 0, 0)); // Rouge X
-        const axisY = createAxis(0x00ff00, new THREE.Vector3(0, 1, 0)); // Vert Y
-        const axisZ = createAxis(0x0000ff, new THREE.Vector3(0, 0, 1)); // Bleu Z
-        scene.add(axisX);
-        scene.add(axisY);
-        scene.add(axisZ);
+                // Couleurs
+                vec3 colorCore = vec3(1.0, 0.95, 0.8); 
+                vec3 colorInner = vec3(1.0, 0.5, 0.05); 
+                vec3 colorOuter = vec3(0.6, 0.05, 0.0); 
+                
+                float radialPos = (r - 4.5) / (55.0 - 4.5);
+                vec3 baseColor = mix(colorInner, colorOuter, pow(radialPos, 0.5));
+                baseColor = mix(baseColor, colorCore, smoothstep(0.1, 0.0, radialPos));
+                
+                // Stries
+                float rings = sin(r * 2.0 + noiseVal * 2.0);
+                baseColor *= (0.9 + 0.1 * rings);
 
-        const fixedCameraPosition = {
-            x: 0,
-            y: 6,
-            z: 25,
-            radius: 25.71,
-            theta: 1.571,
-            phi: 1.336
-        };
-        
-        let cameraDistance = fixedCameraPosition.radius;
-        
-        const controls = { 
-            rotateSpeed: 1.0, 
-            zoomSpeed: 1.2, 
-            minDistance: 1, 
-            maxDistance: 300, 
-            target: new THREE.Vector3(0, 0, 0), 
-            spherical: { 
-                radius: 80, 
-                theta: 0, 
-                phi: Math.PI / 4
-            }, 
-            isDragging: false, 
-            lastX: 0, 
-            lastY: 0,
-            enabled: true
-        };
+                vec3 finalColor = baseColor * (arms * 1.5 + 0.2);
 
-        const onMouseDown = (e) => { 
-            if (!controls.enabled) return;
-            controls.isDragging = true; 
-            controls.lastX = e.clientX; 
-            controls.lastY = e.clientY; 
-        };
-        
-        const onMouseMove = (e) => { 
-            if (!controls.isDragging || !controls.enabled) return; 
-            const deltaX = e.clientX - controls.lastX; 
-            const deltaY = e.clientY - controls.lastY; 
-            controls.spherical.theta -= deltaX * 0.01; 
-            controls.spherical.phi -= deltaY * 0.01; 
-            controls.spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, controls.spherical.phi)); 
-            controls.lastX = e.clientX; 
-            controls.lastY = e.clientY; 
-        };
-        
-        const onMouseUp = () => { 
-            controls.isDragging = false; 
-        };
-        
-        const onWheel = (e) => { 
-            if (!controls.enabled) return;
-            e.preventDefault(); 
-            controls.spherical.radius += e.deltaY * 0.05; 
-            controls.spherical.radius = Math.max(1, Math.min(300, controls.spherical.radius)); 
-        };
+                // Transparence
+                float alpha = smoothstep(4.2, 5.0, r) * smoothstep(55.0, 35.0, r);
+                alpha *= smoothstep(0.1, 0.6, noiseVal);
 
-        renderer.domElement.addEventListener('mousedown', onMouseDown);
-        renderer.domElement.addEventListener('mousemove', onMouseMove);
-        renderer.domElement.addEventListener('mouseup', onMouseUp);
-        renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
-        
-        let isAnimating = false;
-        let animationProgress = 0;
-        const animationDuration = 5000;
-        const blackScreenDuration = 100;
-        let animationStartTime = 0;
-        let showContent = false;
-        
-        const enterButton = document.getElementById('enter-button');
-        const tpButton = document.getElementById('tp-button');
-        const coordsButton = document.getElementById('coords-button');
-        const coordsDisplay = document.getElementById('coords-display');
-        const regroupButton = document.getElementById('regroup-button');
-        
-        let isRegrouping = false; // État du regroupement pour le test
-        let regroupTestStartTime = 0;
-
-        // Capturer les quaternions initiaux des anneaux au début de l'animation
-        const frozenRingQuaternions = [null, null, null];
-
-        // Fonction globale pour le bouton
-        window.toggleRegroup = function() {
-            isRegrouping = !isRegrouping;
-            const btn = document.getElementById('regroup-button');
-
-            if (isRegrouping) {
-                // Figer les quaternions actuels des anneaux
-                for (let i = 0; i < numRings; i++) {
-                    const quat = new THREE.Quaternion();
-                    quat.setFromAxisAngle(ringAxes[i], ringRotations[i]);
-                    frozenRingQuaternions[i] = quat;
-                }
-                regroupTestStartTime = Date.now();
-                btn.textContent = '❌ Stop';
-                btn.style.background = 'rgba(255, 0, 0, 0.5)';
-            } else {
-                btn.textContent = '🔄 Test Regroup';
-                btn.style.background = 'rgba(255, 100, 255, 0.1)';
+                gl_FragColor = vec4(finalColor, alpha);
             }
-        };
-        
-        coordsButton.addEventListener('click', () => {
-            if (controls.enabled) {
-                const x = controls.spherical.radius * Math.sin(controls.spherical.phi) * Math.cos(controls.spherical.theta);
-                const y = controls.spherical.radius * Math.cos(controls.spherical.phi);
-                const z = controls.spherical.radius * Math.sin(controls.spherical.phi) * Math.sin(controls.spherical.theta);
+        `;
 
-                coordsDisplay.innerHTML = `
-                    <strong>Axes de référence :</strong><br>
-                    <span style="color: #ff0000;">🔴 Rouge = X</span><br>
-                    <span style="color: #00ff00;">🟢 Vert = Y</span><br>
-                    <span style="color: #0099ff;">🔵 Bleu = Z</span><br>
-                    <br>
-                    <strong>Position caméra :</strong><br>
-                    <span style="color: #ff6666;">x: ${x.toFixed(2)}</span><br>
-                    <span style="color: #66ff66;">y: ${y.toFixed(2)}</span><br>
-                    <span style="color: #6699ff;">z: ${z.toFixed(2)}</span><br>
-                    <br>
-                    <strong>Sphérique :</strong><br>
-                    radius: ${controls.spherical.radius.toFixed(2)}<br>
-                    theta: ${controls.spherical.theta.toFixed(3)}<br>
-                    phi: ${controls.spherical.phi.toFixed(3)}
-                `;
-                coordsDisplay.classList.add('visible');
+        const diskMat = new THREE.ShaderMaterial({
+            uniforms: { u_time: { value: 0 } },
+            vertexShader: `varying vec3 vPos; void main() { vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+            fragmentShader: diskShaderFragment,
+            transparent: true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+        });
 
-                setTimeout(() => {
-                    coordsDisplay.classList.remove('visible');
-                }, 5000);
-            }
-        });
-        
-        tpButton.addEventListener('click', () => {
-            if (controls.enabled) {
-                controls.spherical.radius = fixedCameraPosition.radius;
-                controls.spherical.theta = fixedCameraPosition.theta;
-                controls.spherical.phi = fixedCameraPosition.phi;
-            }
-        });
-        
-        enterButton.addEventListener('click', () => {
-            if (!isAnimating) {
-                // Figer les quaternions actuels des anneaux
-                for (let i = 0; i < numRings; i++) {
-                    const quat = new THREE.Quaternion();
-                    quat.setFromAxisAngle(ringAxes[i], ringRotations[i]);
-                    frozenRingQuaternions[i] = quat;
-                }
-                isAnimating = true;
-                animationStartTime = Date.now();
-                enterButton.classList.add('hidden');
-                tpButton.classList.add('hidden');
-                coordsButton.classList.add('hidden');
-                coordsDisplay.classList.remove('visible');
-                controls.enabled = false;
-            }
-        });
-        
-        let pulseTime = 0;
-        let globalTime = 0;
-        let regroupementComplete = false;
-        const regroupementDuration = 3000; // 3 secondes
-        
+        const accretionDisk = new THREE.Mesh(diskGeo, diskMat);
+        accretionDisk.rotation.x = -Math.PI / 2;
+        scene.add(accretionDisk);
+
+        // --- ANIMATION LOOP ---
+        const clock = new THREE.Clock();
         function animate() {
             requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
             
-            globalTime += 0.016;
-            pulseTime += 0.002;
-            const pulse = Math.sin(pulseTime) * 0.02 + 1;
+            nebulaMat.uniforms.u_time.value = time;
+            diskMat.uniforms.u_time.value = time;
+            glowMat.uniforms.viewVector.value.subVectors(camera.position, glowSphere.position);
             
-            // Update photon ring pulse
-            photonRingMaterial.uniforms.time.value = globalTime;
-            
-            // Animation des anneaux
-            if (isRegrouping) {
-                // Mode test : regroupement continu
-                const elapsed = Date.now() - regroupTestStartTime;
-                const regroupProgress = Math.min(elapsed / regroupementDuration, 1);
-
-                // Courbe ease-in-out pour plus de fluidité
-                const t = regroupProgress < 0.5
-                    ? 2 * regroupProgress * regroupProgress
-                    : 1 - Math.pow(-2 * regroupProgress + 2, 2) / 2;
-
-                const photonPositionsArray = photonRingGeometry.attributes.position.array;
-
-                // Anneaux verticaux avec jonction à Z=0 : rotation 90° autour X + inclinaisons autour Z
-                const targetTilts = [-Math.PI / 9, 0, Math.PI / 9]; // -20°, 0°, +20°
-
-                for (let ringIdx = 0; ringIdx < numRings; ringIdx++) {
-                    const baseIndex = ringIdx * particlesPerRing;
-                    const tiltAngle = targetTilts[ringIdx];
-
-                    // Quaternion actuel (figé)
-                    const currentQuat = frozenRingQuaternions[ringIdx];
-
-                    // Créer le quaternion cible pour anneaux verticaux avec jonction sur Z (équateur)
-                    const targetQuat = new THREE.Quaternion();
-                    // Étape 1 : Rotation de 90° autour Y pour placer la jonction sur Z
-                    const quatY = new THREE.Quaternion();
-                    quatY.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2);
-                    // Étape 2 : Inclinaison autour Z pour séparer les anneaux
-                    const quatTilt = new THREE.Quaternion();
-                    quatTilt.setFromAxisAngle(new THREE.Vector3(0, 0, 1), tiltAngle);
-                    // Combiner : rotation Y d'abord, puis tilt Z
-                    targetQuat.multiplyQuaternions(quatTilt, quatY);
-
-                    // SLERP (interpolation sphérique) entre quaternions
-                    const interpQuat = new THREE.Quaternion();
-                    interpQuat.slerpQuaternions(currentQuat, targetQuat, t);
-
-                    // Convertir le quaternion interpolé en matrice
-                    const matrix = new THREE.Matrix4();
-                    matrix.makeRotationFromQuaternion(interpQuat);
-
-                    // Extraire les composants de la matrice
-                    const m = matrix.elements;
-                    const r00 = m[0], r01 = m[4], r02 = m[8];
-                    const r10 = m[1], r11 = m[5], r12 = m[9];
-                    const r20 = m[2], r21 = m[6], r22 = m[10];
-
-                    // Appliquer aux positions DE BASE (cercle plat d'origine)
-                    for (let i = 0; i < particlesPerRing; i++) {
-                        const idx = baseIndex + i;
-
-                        // Utiliser les VRAIES positions de base (cercle plat)
-                        const px = photonBasePositions[idx * 3];
-                        const py = photonBasePositions[idx * 3 + 1];
-                        const pz = photonBasePositions[idx * 3 + 2];
-
-                        photonPositionsArray[idx * 3]     = r00*px + r01*py + r02*pz;
-                        photonPositionsArray[idx * 3 + 1] = r10*px + r11*py + r12*pz;
-                        photonPositionsArray[idx * 3 + 2] = r20*px + r21*py + r22*pz;
-                    }
-                }
-
-                photonRingGeometry.attributes.position.needsUpdate = true;
-            } else if (isAnimating && !regroupementComplete) {
-                // Phase 1: Regroupement avec jonction aux pôles (0-3 secondes)
-                const elapsed = Date.now() - animationStartTime;
-                const regroupProgress = Math.min(elapsed / regroupementDuration, 1);
-
-                // Courbe ease-in-out pour plus de fluidité
-                const t = regroupProgress < 0.5
-                    ? 2 * regroupProgress * regroupProgress
-                    : 1 - Math.pow(-2 * regroupProgress + 2, 2) / 2;
-
-                const photonPositionsArray = photonRingGeometry.attributes.position.array;
-
-                // Anneaux verticaux avec jonction à Z=0 : rotation 90° autour X + inclinaisons autour Z
-                const targetTilts = [-Math.PI / 9, 0, Math.PI / 9]; // -20°, 0°, +20°
-
-                for (let ringIdx = 0; ringIdx < numRings; ringIdx++) {
-                    const baseIndex = ringIdx * particlesPerRing;
-                    const tiltAngle = targetTilts[ringIdx];
-
-                    // Quaternion actuel (figé)
-                    const currentQuat = frozenRingQuaternions[ringIdx];
-
-                    // Créer le quaternion cible pour anneaux verticaux avec jonction sur Z (équateur)
-                    const targetQuat = new THREE.Quaternion();
-                    // Étape 1 : Rotation de 90° autour Y pour placer la jonction sur Z
-                    const quatY = new THREE.Quaternion();
-                    quatY.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2);
-                    // Étape 2 : Inclinaison autour Z pour séparer les anneaux
-                    const quatTilt = new THREE.Quaternion();
-                    quatTilt.setFromAxisAngle(new THREE.Vector3(0, 0, 1), tiltAngle);
-                    // Combiner : rotation Y d'abord, puis tilt Z
-                    targetQuat.multiplyQuaternions(quatTilt, quatY);
-
-                    // SLERP (interpolation sphérique) entre quaternions
-                    const interpQuat = new THREE.Quaternion();
-                    interpQuat.slerpQuaternions(currentQuat, targetQuat, t);
-
-                    // Convertir le quaternion interpolé en matrice
-                    const matrix = new THREE.Matrix4();
-                    matrix.makeRotationFromQuaternion(interpQuat);
-
-                    // Extraire les composants de la matrice
-                    const m = matrix.elements;
-                    const r00 = m[0], r01 = m[4], r02 = m[8];
-                    const r10 = m[1], r11 = m[5], r12 = m[9];
-                    const r20 = m[2], r21 = m[6], r22 = m[10];
-
-                    // Appliquer aux positions DE BASE (cercle plat d'origine)
-                    for (let i = 0; i < particlesPerRing; i++) {
-                        const idx = baseIndex + i;
-
-                        // Utiliser les VRAIES positions de base (cercle plat)
-                        const px = photonBasePositions[idx * 3];
-                        const py = photonBasePositions[idx * 3 + 1];
-                        const pz = photonBasePositions[idx * 3 + 2];
-
-                        photonPositionsArray[idx * 3]     = r00*px + r01*py + r02*pz;
-                        photonPositionsArray[idx * 3 + 1] = r10*px + r11*py + r12*pz;
-                        photonPositionsArray[idx * 3 + 2] = r20*px + r21*py + r22*pz;
-                    }
-                }
-
-                photonRingGeometry.attributes.position.needsUpdate = true;
-
-                // Quand le regroupement est terminé
-                if (regroupProgress >= 1) {
-                    regroupementComplete = true;
-                    animationStartTime = Date.now(); // Reset pour la phase 2
-                }
-            } else if (!isAnimating) {
-                // Rotation normale indépendante de chaque anneau
-                const photonPositionsArray = photonRingGeometry.attributes.position.array;
-                
-                for (let ringIdx = 0; ringIdx < numRings; ringIdx++) {
-                    ringRotations[ringIdx] += ringRotationSpeeds[ringIdx];
-                    
-                    const baseIndex = ringIdx * particlesPerRing;
-                    const axis = ringAxes[ringIdx];
-                    const angle = ringRotations[ringIdx];
-                    
-                    const c = Math.cos(angle);
-                    const s = Math.sin(angle);
-                    const t = 1 - c;
-                    const x = axis.x, y = axis.y, z = axis.z;
-                    
-                    const r00 = t*x*x + c,    r01 = t*x*y - s*z, r02 = t*x*z + s*y;
-                    const r10 = t*x*y + s*z,  r11 = t*y*y + c,   r12 = t*y*z - s*x;
-                    const r20 = t*x*z - s*y,  r21 = t*y*z + s*x, r22 = t*z*z + c;
-                    
-                    for (let i = 0; i < particlesPerRing; i++) {
-                        const idx = baseIndex + i;
-                        
-                        const px = photonInitialPositions[idx * 3];
-                        const py = photonInitialPositions[idx * 3 + 1];
-                        const pz = photonInitialPositions[idx * 3 + 2];
-                        
-                        photonPositionsArray[idx * 3]     = r00*px + r01*py + r02*pz;
-                        photonPositionsArray[idx * 3 + 1] = r10*px + r11*py + r12*pz;
-                        photonPositionsArray[idx * 3 + 2] = r20*px + r21*py + r22*pz;
-                    }
-                }
-                
-                photonRingGeometry.attributes.position.needsUpdate = true;
-            }
-            
-            if (isAnimating) {
-                const elapsed = Date.now() - animationStartTime;
-                animationProgress = Math.min(elapsed / animationDuration, 1);
-                
-                if (animationProgress < 0.9) {
-                    const phase1Progress = animationProgress / 0.9;
-                    
-                    const gravityCurve = Math.pow(phase1Progress, 2.5);
-                    
-                    const currentRadius = fixedCameraPosition.radius * (1 - gravityCurve);
-                    
-                    const dirX = fixedCameraPosition.x / fixedCameraPosition.radius;
-                    const dirY = fixedCameraPosition.y / fixedCameraPosition.radius;
-                    const dirZ = fixedCameraPosition.z / fixedCameraPosition.radius;
-                    
-                    camera.position.x = dirX * currentRadius;
-                    camera.position.y = dirY * currentRadius;
-                    camera.position.z = dirZ * currentRadius;
-                    
-                    cameraDistance = currentRadius;
-                    
-                    const baseFOV = 75;
-                    const maxFOV = 175;
-                    camera.fov = baseFOV + (gravityCurve * (maxFOV - baseFOV));
-                    camera.updateProjectionMatrix();
-                    
-                    if (animationProgress < 0.8) {
-                        renderer.domElement.style.opacity = '1';
-                    } else {
-                        const fadeStart = (animationProgress - 0.8) / 0.1;
-                        renderer.domElement.style.opacity = String(1 - fadeStart);
-                    }
-                    
-                    if (cameraDistance < 8) {
-                        const fadeParticles = Math.pow(cameraDistance / 8, 2);
-                        particleMaterial.uniforms.opacity.value = 1.0 * fadeParticles;
-                    } else {
-                        particleMaterial.uniforms.opacity.value = 1.0;
-                    }
-                }
-                else {
-                    const phase2Progress = (animationProgress - 0.9) / 0.1;
-                    
-                    const currentRadius = -5 * phase2Progress;
-                    
-                    const dirX = fixedCameraPosition.x / fixedCameraPosition.radius;
-                    const dirY = fixedCameraPosition.y / fixedCameraPosition.radius;
-                    const dirZ = fixedCameraPosition.z / fixedCameraPosition.radius;
-                    
-                    camera.position.x = dirX * currentRadius;
-                    camera.position.y = dirY * currentRadius;
-                    camera.position.z = dirZ * currentRadius;
-                    
-                    cameraDistance = Math.abs(currentRadius);
-                    
-                    camera.fov = 175;
-                    camera.updateProjectionMatrix();
-                    
-                    renderer.domElement.style.opacity = '0';
-                    particleMaterial.uniforms.opacity.value = 0;
-                }
-                
-                if (animationProgress >= 1) {
-                    isAnimating = false;
-                    setTimeout(() => {
-                        showContent = true;
-                        const content = document.querySelector('.content');
-                        content.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                        content.style.opacity = '0';
-                        content.style.transform = 'scale(0.8)';
-                        setTimeout(() => {
-                            content.style.opacity = '1';
-                            content.style.transform = 'scale(1)';
-                        }, 50);
-                        
-                        container.style.transition = 'opacity 0.3s ease';
-                        container.style.opacity = '0';
-                        setTimeout(() => {
-                            renderer.setAnimationLoop(null);
-                            renderer.dispose();
-                            container.style.display = 'none';
-                        }, 300);
-                    }, blackScreenDuration);
-                }
-            }
-            
-            const positionsArray = geometry.attributes.position.array;
-            
-            for (let i = 0; i < count; i++) {
-                let distance = initialDistances[i];
-                distance -= 0.010;
-                
-                if (distance < 6) {
-                    const t = Math.random();
-                    
-                    if (t < 0.75) {
-                        const t2 = t / 0.75;
-                        distance = 6 + Math.pow(t2, 2.5) * 18;
-                    } else {
-                        const t2 = (t - 0.75) / 0.25;
-                        distance = 24 + t2 * 30;
-                    }
-                    
-                    initialDistances[i] = distance;
-                    initialAngles[i] = Math.random() * Math.PI * 2;
-                } else {
-                    initialDistances[i] = distance;
-                }
-                
-                const angle = initialAngles[i];
-                const spiralFactor = spiralFactors[i];
-                const spiralAngle = -GOLDEN_ANGLE * Math.log(distance / 6) * spiralFactor;
-                let finalAngle = angle + spiralAngle;
-                
-                if (distance > 24) {
-                    const numArms = 3;
-                    const armIndex = Math.floor((angle / (Math.PI * 2)) * numArms);
-                    const armAngleBase = (armIndex * Math.PI * 2) / numArms;
-                    
-                    const distanceInArm = (distance - 24) / 30;
-                    const armWidth = 1.5 - distanceInArm * 1.2;
-                    const armVariation = ((angle % (Math.PI * 2 / numArms)) - Math.PI / numArms) / (Math.PI / numArms) * armWidth * 0.5;
-                    const armSpiral = distanceInArm * Math.PI * 0.6;
-                    const armAngle = armAngleBase + armSpiral + armVariation;
-                    
-                    const armInfluence = Math.pow(distanceInArm, 1.5);
-                    finalAngle = finalAngle * (1 - armInfluence) + armAngle * armInfluence;
-                }
-                
-                positionsArray[i * 3] = Math.cos(finalAngle) * distance;
-                positionsArray[i * 3 + 1] = Math.sin(finalAngle) * distance;
-                
-                const lumT = Math.min((distance - 6) / 28, 1.0);
-                if (distance <= 34) {
-                    luminosities[i] = 120.0 - lumT * 50.0;
-                } else {
-                    const farT = (distance - 34) / 20;
-                    luminosities[i] = 70.0 - farT * 30.0;
-                }
-            }
-            
-            geometry.attributes.position.needsUpdate = true;
-            geometry.attributes.luminosity.needsUpdate = true;
-            
-            if (controls.enabled) {
-                camera.position.x = controls.spherical.radius * Math.sin(controls.spherical.phi) * Math.cos(controls.spherical.theta);
-                camera.position.y = controls.spherical.radius * Math.cos(controls.spherical.phi);
-                camera.position.z = controls.spherical.radius * Math.sin(controls.spherical.phi) * Math.sin(controls.spherical.theta);
-                camera.lookAt(controls.target);
-            } else if (!isAnimating) {
-                camera.position.x = fixedCameraPosition.x;
-                camera.position.y = fixedCameraPosition.y;
-                camera.position.z = fixedCameraPosition.z;
-                camera.lookAt(0, 0, 0);
-            }
-            
+            controls.update();
             renderer.render(scene, camera);
         }
-        
         animate();
-        
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ==========================================
+        // ANIMATION ENTRER (FLUIDE & TRAVERSANTE)
+        // ==========================================
+        const btn = document.getElementById('enter-button');
+        
+        btn.addEventListener('click', () => {
+            btn.classList.add('hidden');
+            controls.enabled = false;
+            
+            const startPos = camera.position.clone();
+            const startFOV = camera.fov;
+            const startRadius = startPos.length();
+            
+            const startTime = performance.now();
+            const duration = 2500; 
+
+            function enterLoop(now) {
+                const elapsed = (now - startTime) / duration;
+
+                if (elapsed < 1) {
+                    const t = elapsed * elapsed * elapsed; 
+                    
+                    const currentRadius = startRadius * (1 - t);
+                    
+                    // Disparition progressive des objets pour éviter le clipping brutal
+                    if(currentRadius < BH_RADIUS * 1.5) {
+                        const opacity = Math.max(0, (currentRadius - BH_RADIUS) / (BH_RADIUS * 0.5));
+                        // On cache brutalement si très proche
+                        if(currentRadius < BH_RADIUS) {
+                            blackHole.visible = false;
+                            glowSphere.visible = false;
+                            accretionDisk.visible = false;
+                            stars.visible = false;
+                            bgMesh.visible = false;
+                            nebulaSphere.visible = false;
+                        }
+                    }
+
+                    camera.position.setLength(currentRadius);
+                    
+                    if(currentRadius > 0.5) {
+                        camera.lookAt(0, 0, 0);
+                    }
+
+                    camera.fov = startFOV + t * 90;
+                    camera.updateProjectionMatrix();
+                    
+                    requestAnimationFrame(enterLoop);
+                } else {
+                    document.querySelector('.content').classList.add('visible');
+                    renderer.domElement.style.display = 'none';
+                }
+            }
+            requestAnimationFrame(enterLoop);
         });
     </script>
 </body>
